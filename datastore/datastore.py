@@ -57,7 +57,8 @@ class DataStore(object):
                 self._add_files(subdir[0], extension)
 
         # Warn the user if no files were found
-        warnings.warn("No '{}' files found in {}.".format(extension, root))
+        if not self.labels:
+            warnings.warn("No '{}' files found in {}.".format(extension, root))
 
         # Set up other useful attributes
         self.root = root
@@ -205,7 +206,7 @@ class NumpyDataStore(DataStore):
         are loaded from the root directory and all subdirectories of root.
     """
     def __init__(self, root, include_subdirectories=True):
-        super(NumpyDataStore, self).__init__(root, extension='.npy',
+        super(NumpyDataStore, self).__init__(root, '.npy',
                                              include_subdirectories,
                                              cdtype=NumpyClassData)
         return
