@@ -2,7 +2,7 @@ import os
 import warnings
 import numpy as np
 
-from .classdata import ClassData, NumpyClassData
+from .classdata import ClassData, NumpyClassData, MatlabClassData, HDF5ClassData
 
 
 class DataStore(object):
@@ -175,7 +175,7 @@ class DataStore(object):
         # Loop over each desired label and load the data
         for l in label:
             tmp = self.labels[l].load(ind)
-            if isinstance(data, list):
+            if isinstance(tmp, list):
                 data += tmp
                 labels += [l] * len(tmp)
             else:
@@ -209,4 +209,50 @@ class NumpyDataStore(DataStore):
         super(NumpyDataStore, self).__init__(root, '.npy',
                                              include_subdirectories,
                                              cdtype=NumpyClassData)
+        return
+
+
+class MatlabDataStore(DataStore):
+    """
+    DataStore object for '.mat' Matlab data.
+
+    Use a NumpyDataStore object to manage a collection of '.mat' files, where
+    each individual file fits in memory, but the entire collection does not
+    necessarily fit.
+
+    Parameters
+    ----------
+    root : str
+        Root directory from which to load data
+    include_subdirectories : bool (default=True)
+        If False, files are only loaded from the root directory. If True, files
+        are loaded from the root directory and all subdirectories of root.
+    """
+    def __init__(self, root, include_subdirectories=True):
+        super(MatlabDataStore, self).__init__(root, '.mat',
+                                              include_subdirectories,
+                                              cdtype=MatlabClassData)
+        return
+
+
+class HDF5DataStore(DataStore):
+    """
+    DataStore object for HDF5 (and Matlab v7.3) data.
+
+    Use a NumpyDataStore object to manage a collection of HDF5 files, where
+    each individual file fits in memory, but the entire collection does not
+    necessarily fit.
+
+    Parameters
+    ----------
+    root : str
+        Root directory from which to load data
+    include_subdirectories : bool (default=True)
+        If False, files are only loaded from the root directory. If True, files
+        are loaded from the root directory and all subdirectories of root.
+    """
+    def __init__(self, root, include_subdirectories=True):
+        super(HDF5DataStore, self).__init__(root, '.mat',
+                                            include_subdirectories,
+                                            cdtype=HDF5ClassData)
         return

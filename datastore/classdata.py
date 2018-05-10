@@ -1,5 +1,7 @@
 import numpy as np
+import h5py
 from os import path
+from scipy.io import loadmat
 
 
 class ClassData(object):
@@ -58,7 +60,7 @@ class ClassData(object):
         """
         # Convert ind to list of indices
         if ind is None:
-            ind_out = range(ind)
+            ind_out = range(self.n_files)
         elif not self._is_iterable(ind):
             ind_out = [ind]
         else:
@@ -100,7 +102,7 @@ class ClassData(object):
         data = []
         for i in ind:
             if path.isfile(self.files[i]):
-                data.append(np.load(self.files[i]))
+                data.append(self._load_func(self.files[i]))
 
         if len(data) == 1:
             return data[0]
@@ -142,3 +144,75 @@ class NumpyClassData(ClassData):
             Loaded data file
         """
         return np.load(filepath)
+
+
+class MatlabClassData(ClassData):
+    """
+    ClassData class for '.mat' Matlab files.
+
+    This object stores the filepaths of a '.mat' dataset and can load in files
+    when required.
+
+    Parameters
+    ----------
+    filepaths : list of str
+        Filepaths to store
+
+    Attributes
+    ----------
+    files : list of str
+        Data filepaths
+    n_files : int
+        Number of files stored
+    """
+    def _load_func(self, filepath):
+        """
+        Function used to load the data.
+
+        Parameters
+        ----------
+        filepath : str
+            Filepath of '.mat' file
+
+        Returns
+        -------
+        data : numpy.ndarray
+            Loaded data file
+        """
+        return loadmat(filepath)
+
+
+class HDF5ClassData(ClassData):
+    """
+    ClassData class for HDF5 (and Matlab v7.3) files
+
+    This object stores the filepaths of a HDF5 dataset and can load in files
+    when required.
+
+    Parameters
+    ----------
+    filepaths : list of str
+        Filepaths to store
+
+    Attributes
+    ----------
+    files : list of str
+        Data filepaths
+    n_files : int
+        Number of files stored
+    """
+    def _load_func(self, filepath):
+        """
+        Function used to load the data.
+
+        Parameters
+        ----------
+        filepath : str
+            Filepath of HDF5 (or Matlab v7.3) file
+
+        Returns
+        -------
+        data : h5py.File object
+            Loaded data file
+        """
+        return h5py.File(filepath, 'r')
