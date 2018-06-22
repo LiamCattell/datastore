@@ -38,6 +38,7 @@ Here, we have passed the `NumpyDataStore` object the root directory for our file
 
 * MyData
 * Cat
+* Dog
 * Husky
 * Labrador
 * Penguin
