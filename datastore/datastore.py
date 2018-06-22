@@ -2,7 +2,7 @@ import os
 import warnings
 import numpy as np
 
-from .classdata import ClassData, NumpyClassData, MatlabClassData, HDF5ClassData
+from .classdata import *
 
 
 class DataStore(object):
@@ -24,6 +24,20 @@ class DataStore(object):
         are loaded from the root directory and all subdirectories of root.
     cdtype : ClassData object or None:
         Defines the type of ClassData object used to store/load the files.
+
+    Attributes
+    ----------
+    labels : dict
+        Dictionary of class labels and corresponding data. Keys are label names
+        and values are ClassData objects.
+    n_classes : int
+        Number of classes.
+    n_files : list of int
+        Number of files in each class.
+    root : str
+        Path of the root directory.
+    extension : str or list of str
+        File extension(s) of the stored data.
     """
     def __init__(self, root, extension, include_subdirectories=True,
                  cdtype=None):
@@ -31,9 +45,15 @@ class DataStore(object):
         # Convert relative root path to absolute path
         root = os.path.abspath(root)
 
+        # Convert extension to list
+        if isinstance(extension, str):
+            extension = [extension]
+
         # Check extension is something like '.jpg', not 'jpg'
-        if extension[0] != '.':
-            extension = '.{}'.format(extension)
+        extension = ['.{}'.format(x) if x[0] != '.' else x for x in extension]
+
+        # Make extensions lowercase
+        extension = [x.lower() for x in extension]
 
         if cdtype is None:
             self.cdtype = ClassData
@@ -53,7 +73,7 @@ class DataStore(object):
         # Add files in subdirectories
         if include_subdirectories:
             # Loop over all subdirectories in root
-            for subdir in filetree:
+            for subdir in sorted(filetree):
                 self._add_files(subdir[0], extension)
 
         # Warn the user if no files were found
@@ -96,9 +116,9 @@ class DataStore(object):
         """
         # Loop over files in the directory
         filepaths = []
-        for f in os.listdir(dirpath):
+        for f in sorted(os.listdir(dirpath)):
             # If this file matches the filetype, add it to the list
-            if os.path.splitext(f)[1] == extension:
+            if os.path.splitext(f)[1].lower() in extension:
                 filepaths.append(os.path.join(dirpath,f))
 
         # If filepaths exist, update the dict of labels
@@ -255,4 +275,28 @@ class HDF5DataStore(DataStore):
         super(HDF5DataStore, self).__init__(root, '.mat',
                                             include_subdirectories,
                                             cdtype=HDF5ClassData)
+        return
+
+
+class ImageDataStore(DataStore):
+    """
+    DataStore object for image data.
+
+    Use a NumpyDataStore object to manage a collection of image files, where
+    each individual file fits in memory, but the entire collection does not
+    necessarily fit.
+
+    Parameters
+    ----------
+    root : str
+        Root directory from which to load data
+    include_subdirectories : bool (default=True)
+        If False, files are only loaded from the root directory. If True, files
+        are loaded from the root directory and all subdirectories of root.
+    """
+    def __init__(self, root, include_subdirectories=True):
+        extensions = ['.jpg', '.png', '.tif', '.bmp']
+        super(ImageDataStore, self).__init__(root, extensions,
+                                             include_subdirectories,
+                                             cdtype=ImageClassData)
         return

@@ -2,6 +2,7 @@ import numpy as np
 import h5py
 from os import path
 from scipy.io import loadmat
+from imageio import imread
 
 
 class ClassData(object):
@@ -216,3 +217,39 @@ class HDF5ClassData(ClassData):
             Loaded data file
         """
         return h5py.File(filepath, 'r')
+
+
+class ImageClassData(ClassData):
+    """
+    ClassData class for image files.
+
+    This object stores the filepaths of an image dataset and can load in files
+    when required.
+
+    Parameters
+    ----------
+    filepaths : list of str
+        Filepaths to store
+
+    Attributes
+    ----------
+    files : list of str
+        Data filepaths
+    n_files : int
+        Number of files stored
+    """
+    def _load_func(self, filepath):
+        """
+        Function used to load the data.
+
+        Parameters
+        ----------
+        filepath : str
+            Filepath of image file
+
+        Returns
+        -------
+        data : ndarray
+            Loaded data file
+        """
+        return imread(filepath, as_gray=True)
